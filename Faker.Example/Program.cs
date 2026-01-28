@@ -1,4 +1,7 @@
 ﻿using System.Text;
+using Faker.Core.Config;
+using Faker.Core.Context;
+using Faker.Core.Generators.Core.Abstraction;
 using Faker.Core.Generators.Core.Validator;
 
 namespace Faker.Example;
@@ -12,6 +15,8 @@ class Sample
         {
         }
 
+        public string StringProperty { get; set; }
+        
         public A A1 { get; set; }
         
         public A(A a)
@@ -20,7 +25,7 @@ class Sample
         }
         public override string ToString()
         {
-            return $"To string A with value";
+            return $"To string A with value {StringProperty}";
         }
     }
 
@@ -61,15 +66,35 @@ class Sample
         public string Str => "C string";
         public override string ToString()
         {
-            return "ToString C";
+            return $"ToString C {A.StringProperty}";
+        }
+    }
+    
+    private class CustomAGenerator : IValueGenerator
+    {
+        public object? Generate(in Type typeToGenerate, in GeneratorContext context)
+        {
+            return new A()
+            {
+                StringProperty = "Hello World!",
+            };
+        }
+
+        public bool CanGenerate(in Type type)
+        {
+            return type == typeof(A);
         }
     }
 
     public static void Main()
     {
-        var faker = new Core.Faker();
-        StringBuilder a = faker.Create<StringBuilder>();
-        Console.WriteLine(a.ToString());
+        FakerConfig config = new FakerConfig(new KeyValuePair<Type, IValueGenerator>(typeof(A), new CustomAGenerator()));
+        
+        var faker = new Core.Faker(config);
+        for (int i = 0; i < 10; i++)
+        {
+            Console.WriteLine(faker.Create<B>());
+        }
     }
     
 }

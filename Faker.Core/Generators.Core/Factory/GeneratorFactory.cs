@@ -1,3 +1,4 @@
+using Faker.Core.Config;
 using Faker.Core.Context;
 using Faker.Core.Extensions.Type;
 using Faker.Core.Generators.Core.Abstraction;
@@ -26,6 +27,21 @@ public class GeneratorFactory
         RegisterPrimitiveGenerators();
     }
 
+    public GeneratorFactory(in FakerConfig config)
+    {
+        RegisterPrimitiveGenerators();
+        Dictionary<Type, IValueGenerator> configGenerators = config.CustomGenerators;
+        foreach (KeyValuePair<Type,IValueGenerator> configGenerator in configGenerators)
+        {
+            RegisterGenerator(configGenerator.Key, configGenerator.Value);
+        }
+    }
+
+    public bool HasGeneratorForType(in Type type)
+    {
+        return _primitiveGenerators.ContainsKey(type);
+    }
+    
     private void RegisterPrimitiveGenerators()
     {
         
@@ -54,7 +70,8 @@ public class GeneratorFactory
         RegisterGenerator(typeof(Enum), new EnumGenerator());
         
     }
-    public void RegisterGenerator(Type type, IValueGenerator generator)
+
+    private void RegisterGenerator(in Type type, in IValueGenerator generator)
     {
         _primitiveGenerators[type] = generator;
     }

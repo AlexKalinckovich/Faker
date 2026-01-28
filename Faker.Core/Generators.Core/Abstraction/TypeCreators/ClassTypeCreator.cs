@@ -25,14 +25,25 @@ public class ClassTypeCreator : ITypeCreator
         _constructorUtils = new ConstructorUtils(this);
     }
     
-    public object Create()
+    public object? Create()
     {
         return CreateClassType(_type);
     }
 
-    private object CreateClassType(in Type type)
+    private object? CreateClassType(in Type type)
     {
-        
+        if (_factory.HasGeneratorForType(type))
+        {
+            IValueGenerator generator = _factory.GetGeneratorForType(type);
+            
+            return generator.Generate(type, _context);
+        }
+
+        return GenerateClassInstance(type);
+    }
+
+    private object GenerateClassInstance(Type type)
+    {
         if (_createdInstances.TryGetValue(type, out object? existing))
         {
             return existing;
@@ -46,7 +57,7 @@ public class ClassTypeCreator : ITypeCreator
         
         return classInstance;
     }
-    
+
 
     private void InitializeAllProperties(object classInstance)
     {
