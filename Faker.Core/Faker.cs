@@ -10,11 +10,18 @@ namespace Faker.Core;
 
 public class Faker
 {
-    private readonly GeneratorFactory _generatorFactory = new();
+    private readonly GeneratorFactory _generatorFactory;
     private readonly GeneratorContext _generatorContext;
 
     public Faker()
     {
+        _generatorFactory = new GeneratorFactory();
+        _generatorContext = new GeneratorContext(new Random(), this);
+    }
+
+    public Faker(FakerConfig config)
+    {
+        _generatorFactory = new GeneratorFactory(config);
         _generatorContext = new GeneratorContext(new Random(), this);
     }
 
