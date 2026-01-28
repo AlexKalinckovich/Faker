@@ -32,17 +32,25 @@ public class GeneratorFactory
         RegisterGenerator(typeof(double), new DoubleGenerator());
         RegisterGenerator(typeof(float), new FloatGenerator());
         RegisterGenerator(typeof(decimal), new DecimalGenerator());
+        
         RegisterGenerator(typeof(string), new StringGenerator());
+        
         RegisterGenerator(typeof(int), new IntGenerator());
         RegisterGenerator(typeof(uint), new UIntGenerator());
+        
         RegisterGenerator(typeof(short), new ShortGenerator());
         RegisterGenerator(typeof(ushort), new UShortGenerator());
-        RegisterGenerator(typeof(long), new LongGenerator()); // Fixed version
-        RegisterGenerator(typeof(ulong), new ULongGenerator()); // Fixed version
+        
+        RegisterGenerator(typeof(long), new LongGenerator()); 
+        RegisterGenerator(typeof(ulong), new ULongGenerator()); 
+        
         RegisterGenerator(typeof(byte), new ByteGenerator());
         RegisterGenerator(typeof(sbyte), new SByteGenerator());
+        
         RegisterGenerator(typeof(bool), new BooleanGenerator());
-        RegisterGenerator(typeof(char), new CharGenerator()); // Used by StringGenerator
+        
+        RegisterGenerator(typeof(char), new CharGenerator()); 
+        
         RegisterGenerator(typeof(Enum), new EnumGenerator());
         
     }
@@ -53,13 +61,13 @@ public class GeneratorFactory
 
     public IValueGenerator GetGeneratorForType(in Type type)
     {
-        if (type.IsValueType)
+        if (type.IsSimpleType())
         {
             Type underlyingType = Nullable.GetUnderlyingType(type) ?? type;
 
             if (_primitiveGenerators.TryGetValue(underlyingType, out IValueGenerator? baseGenerator))
             {
-                if (Nullable.GetUnderlyingType(type) != null)
+                if (type.IsNullableType())
                 {
                     return new NullableGeneratorDecorator(baseGenerator, DefaultNullProbability);
                 }
@@ -82,7 +90,7 @@ public class GeneratorFactory
     {
         public bool CanGenerate(in Type type) => false;
     
-        public object? Generate(in Type typeToGenerate, in GeneratorContext context)
+        public object Generate(in Type typeToGenerate, in GeneratorContext context)
         {
             throw new NotSupportedException($"Complex type {typeToGenerate.Name} should be created via constructors");
         }

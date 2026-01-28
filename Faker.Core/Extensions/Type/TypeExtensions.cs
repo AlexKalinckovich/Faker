@@ -4,14 +4,23 @@ public static class TypeExtensions
 {
     public static bool IsNullableType(this System.Type type)
     {
-        return Nullable.GetUnderlyingType(type) != null || !IsSimpleType(type);
+        return !type.IsValueType || 
+               Nullable.GetUnderlyingType(type) != null;
     }
 
-    public static System.Type GetUnderlyingTypeIfNullable(this System.Type type)
+    public static bool IsStandardLibraryType(this System.Type type)
     {
-        return Nullable.GetUnderlyingType(type) ?? type;
+        
+        return type.Namespace != null && 
+               (type.Namespace.StartsWith("System") || 
+                type.Namespace.StartsWith("Microsoft"));
     }
 
+    public static bool CanProduceCircularDependency(this System.Type type)
+    {
+        return !type.IsSimpleType() && !type.IsStandardLibraryType();
+    }
+    
     public static bool IsSimpleType(this System.Type type)
     {
         bool isSimpleType = type.IsPrimitive ||

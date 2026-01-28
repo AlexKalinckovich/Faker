@@ -1,4 +1,5 @@
 using Faker.Core.Context;
+using Faker.Core.Extensions.Type;
 using Faker.Core.Generators.Core.Abstraction;
 
 namespace Faker.Core.Generators.Core.Generators.Special;
@@ -23,7 +24,7 @@ public class NullableGeneratorDecorator : IValueGenerator
     public object? Generate(in Type typeToGenerate, in GeneratorContext context)
     {
         
-        if (IsNullableType(typeToGenerate) && IsNullProbabilityAchieved(context))
+        if (typeToGenerate.IsNullableType() && IsNullProbabilityAchieved(context))
         {
             return GetNullValueForType(typeToGenerate);
         }
@@ -31,7 +32,7 @@ public class NullableGeneratorDecorator : IValueGenerator
         return _innerGenerator.Generate(typeToGenerate, context);
     }
 
-    private bool IsNullProbabilityAchieved(GeneratorContext context)
+    private bool IsNullProbabilityAchieved(in GeneratorContext context)
     {
         return context.Random.NextDouble() < _nullProbability;
     }
@@ -41,12 +42,7 @@ public class NullableGeneratorDecorator : IValueGenerator
         Type? underlyingType = Nullable.GetUnderlyingType(type);
         return underlyingType != null && _innerGenerator.CanGenerate(underlyingType);
     }
-
-    private bool IsNullableType(in Type type)
-    {
-        return Nullable.GetUnderlyingType(type) != null || !type.IsValueType;
-    }
-
+    
     private object? GetNullValueForType(in Type type)
     {
         object? nullValue = null;

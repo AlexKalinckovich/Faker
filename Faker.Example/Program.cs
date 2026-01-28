@@ -1,44 +1,75 @@
-﻿using Faker.Core.Extensions.Type;
+﻿using System.Text;
+using Faker.Core.Generators.Core.Validator;
 
 namespace Faker.Example;
 
 class Sample
 {
-    
-    public class Person
+
+    public class A
     {
-        public string Name { get; }
-        public int Age { get; }
-    
-        public Person(string name, int age) 
+        public A()
         {
-            Name = name;
-            Age = age;
         }
-    
-        public Person(string name) : this(name, 0) { }
-    }
 
-
-// Immutable objects work too
-    public class Product
-    {
-        public string Name { get; }
-        public decimal Price { get; }
+        public A A1 { get; set; }
         
-        public Person Buyer { get; }
-    
-        public Product(string name, decimal price, Person buyer)
+        public A(A a)
         {
-            Name = name;
-            Price = price;
-            Buyer = buyer;
+            A1 = a;
+        }
+        public override string ToString()
+        {
+            return $"To string A with value";
         }
     }
+
+    public class B
+    {
+        public B()
+        {
+        }
+        public A A { get; set; }
+        public C C { get; set; }
+        
+        
+        public B(A a, C c)
+        {
+            A = a;
+            C = c;
+        }
+
+        public override string ToString()
+        {
+            return $"ToString B called ToString C: {C} and C value: {C.Str}";
+        }
+    }
+    
+    public class C
+    {
+        public C()
+        {
+            
+        }
+        public A A { get; set; }
+
+        public C(A a)
+        {
+            A = a;
+        }
+
+        public string Str => "C string";
+        public override string ToString()
+        {
+            return "ToString C";
+        }
+    }
+
     public static void Main()
     {
         var faker = new Core.Faker();
-        Product? person = faker.Create<Product>(); 
-        
+        StringBuilder a = faker.Create<StringBuilder>();
+        Console.WriteLine(a.ToString());
     }
+    
 }

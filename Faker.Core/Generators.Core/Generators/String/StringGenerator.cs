@@ -5,7 +5,7 @@ namespace Faker.Core.Generators.Core.Generators.String;
 
 public class StringGenerator : IValueGenerator
 {
-    private const uint MaxStringLength = 512;
+    private const uint MaxStringLength = 10;
     public bool CanGenerate(in Type type) => type == typeof(string);
 
     public object Generate(in Type typeToGenerate, in GeneratorContext context)
