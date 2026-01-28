@@ -1,3 +1,4 @@
+using Faker.Core.Config;
 using Faker.Core.Context;
 using Faker.Core.Extensions.Type;
 using Faker.Core.Generators.Core.Abstraction;
@@ -26,40 +27,64 @@ public class GeneratorFactory
         RegisterPrimitiveGenerators();
     }
 
+    public GeneratorFactory(in FakerConfig config)
+    {
+        RegisterPrimitiveGenerators();
+        Dictionary<Type, IValueGenerator> configGenerators = config.CustomGenerators;
+        foreach (KeyValuePair<Type,IValueGenerator> configGenerator in configGenerators)
+        {
+            RegisterGenerator(configGenerator.Key, configGenerator.Value);
+        }
+    }
+
+    public bool HasGeneratorForType(in Type type)
+    {
+        return _primitiveGenerators.ContainsKey(type);
+    }
+    
     private void RegisterPrimitiveGenerators()
     {
         
         RegisterGenerator(typeof(double), new DoubleGenerator());
         RegisterGenerator(typeof(float), new FloatGenerator());
         RegisterGenerator(typeof(decimal), new DecimalGenerator());
+        
         RegisterGenerator(typeof(string), new StringGenerator());
+        
         RegisterGenerator(typeof(int), new IntGenerator());
         RegisterGenerator(typeof(uint), new UIntGenerator());
+        
         RegisterGenerator(typeof(short), new ShortGenerator());
         RegisterGenerator(typeof(ushort), new UShortGenerator());
-        RegisterGenerator(typeof(long), new LongGenerator()); // Fixed version
-        RegisterGenerator(typeof(ulong), new ULongGenerator()); // Fixed version
+        
+        RegisterGenerator(typeof(long), new LongGenerator()); 
+        RegisterGenerator(typeof(ulong), new ULongGenerator()); 
+        
         RegisterGenerator(typeof(byte), new ByteGenerator());
         RegisterGenerator(typeof(sbyte), new SByteGenerator());
+        
         RegisterGenerator(typeof(bool), new BooleanGenerator());
-        RegisterGenerator(typeof(char), new CharGenerator()); // Used by StringGenerator
+        
+        RegisterGenerator(typeof(char), new CharGenerator()); 
+        
         RegisterGenerator(typeof(Enum), new EnumGenerator());
         
     }
-    public void RegisterGenerator(Type type, IValueGenerator generator)
+
+    private void RegisterGenerator(in Type type, in IValueGenerator generator)
     {
         _primitiveGenerators[type] = generator;
     }
 
     public IValueGenerator GetGeneratorForType(in Type type)
     {
-        if (type.IsValueType)
+        if (type.IsSimpleType())
         {
             Type underlyingType = Nullable.GetUnderlyingType(type) ?? type;
 
             if (_primitiveGenerators.TryGetValue(underlyingType, out IValueGenerator? baseGenerator))
             {
-                if (Nullable.GetUnderlyingType(type) != null)
+                if (type.IsNullableType())
                 {
                     return new NullableGeneratorDecorator(baseGenerator, DefaultNullProbability);
                 }
@@ -82,7 +107,7 @@ public class GeneratorFactory
     {
         public bool CanGenerate(in Type type) => false;
     
-        public object? Generate(in Type typeToGenerate, in GeneratorContext context)
+        public object Generate(in Type typeToGenerate, in GeneratorContext context)
         {
             throw new NotSupportedException($"Complex type {typeToGenerate.Name} should be created via constructors");
         }

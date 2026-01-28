@@ -4,22 +4,35 @@ using Faker.Core.Generators.Core.Factory;
 
 namespace Faker.Core.Generators.Core.Abstraction.TypeCreators;
 
-public class PrimitiveTypeCreator<T> : ITypeCreator<T>
+public class PrimitiveTypeCreator : ITypeCreator
 {
-    public T Create(in Type type, in GeneratorFactory factory, in GeneratorContext context)
+    private readonly Type _type;
+    private readonly GeneratorFactory _factory;
+    private readonly GeneratorContext _context;
+
+    public PrimitiveTypeCreator(in Type type, in GeneratorFactory factory, in GeneratorContext context)
     {
-        IValueGenerator generator = factory.GetGeneratorForType(type);
-        
-        object? result = GenerateTypeUsingContext<T>(generator, context);
-        
-        return HandleNullability<T>(result);
+        _type = type;
+        _factory = factory;
+        _context = context;
     }
 
-    private object? GenerateTypeUsingContext<T>(in IValueGenerator generator, in GeneratorContext context)
+    
+    public object? Create()
     {
-        AssertGeneratorCanGenerateType(typeof(T),generator);
+        IValueGenerator generator = _factory.GetGeneratorForType(_type);
+        
+        object? result = GenerateTypeUsingContext(generator, _context);
+        
+        return HandleNullability(result);
+    }
 
-        object? result = generator.Generate(typeof(T), context);
+    private object? GenerateTypeUsingContext(in IValueGenerator generator, in GeneratorContext context)
+    {
+        AssertGeneratorCanGenerateType(_type,generator);
+
+        object? result = generator.Generate(_type, context);
+        
         return result;
     }
 
@@ -31,18 +44,17 @@ public class PrimitiveTypeCreator<T> : ITypeCreator<T>
         }
     }
 
-    private T HandleNullability<T>(in object? value)
+    private object? HandleNullability(in object? value)
     {
-        Type type = typeof(T);
     
-        if (value == null && type.IsSimpleType() && Nullable.GetUnderlyingType(type) == null)
+        if (value == null && !_type.IsNullableType())
         {
             throw new InvalidOperationException(
-                $"Generator returned null for non-nullable type {type.Name}. " +
+                $"Generator returned null for non-nullable type {_type.Name}. " +
                 $"This likely means a NullableGeneratorDecorator was used for a non-nullable type.");
         }
     
-        return (T)value!;
+        return value;
     }
     
 }

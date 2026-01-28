@@ -1,44 +1,100 @@
-﻿using Faker.Core.Extensions.Type;
+﻿using System.Text;
+using Faker.Core.Config;
+using Faker.Core.Context;
+using Faker.Core.Generators.Core.Abstraction;
+using Faker.Core.Generators.Core.Validator;
 
 namespace Faker.Example;
 
 class Sample
 {
-    
-    public class Person
+
+    public class A
     {
-        public string Name { get; }
-        public int Age { get; }
-    
-        public Person(string name, int age) 
+        public A()
         {
-            Name = name;
-            Age = age;
         }
-    
-        public Person(string name) : this(name, 0) { }
-    }
 
-
-// Immutable objects work too
-    public class Product
-    {
-        public string Name { get; }
-        public decimal Price { get; }
+        public string StringProperty { get; set; }
         
-        public Person Buyer { get; }
-    
-        public Product(string name, decimal price, Person buyer)
+        public A A1 { get; set; }
+        
+        public A(A a)
         {
-            Name = name;
-            Price = price;
-            Buyer = buyer;
+            A1 = a;
+        }
+        public override string ToString()
+        {
+            return $"To string A with value {StringProperty}";
         }
     }
+
+    public class B
+    {
+        public B()
+        {
+        }
+        public A A { get; set; }
+        public C C { get; set; }
+        
+        
+        public B(A a, C c)
+        {
+            A = a;
+            C = c;
+        }
+
+        public override string ToString()
+        {
+            return $"ToString B called ToString C: {C} and C value: {C.Str}";
+        }
+    }
+    
+    public class C
+    {
+        public C()
+        {
+            
+        }
+        public A A { get; set; }
+
+        public C(A a)
+        {
+            A = a;
+        }
+
+        public string Str => "C string";
+        public override string ToString()
+        {
+            return $"ToString C {A.StringProperty}";
+        }
+    }
+    
+    private class CustomAGenerator : IValueGenerator
+    {
+        public object? Generate(in Type typeToGenerate, in GeneratorContext context)
+        {
+            return new A()
+            {
+                StringProperty = "Hello World!",
+            };
+        }
+
+        public bool CanGenerate(in Type type)
+        {
+            return type == typeof(A);
+        }
+    }
+
     public static void Main()
     {
-        var faker = new Core.Faker();
-        Product? person = faker.Create<Product>(); 
+        FakerConfig config = new FakerConfig(new KeyValuePair<Type, IValueGenerator>(typeof(A), new CustomAGenerator()));
         
+        var faker = new Core.Faker(config);
+        for (int i = 0; i < 10; i++)
+        {
+            Console.WriteLine(faker.Create<B>());
+        }
     }
+    
 }
