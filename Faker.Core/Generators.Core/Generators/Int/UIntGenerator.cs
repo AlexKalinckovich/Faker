@@ -5,8 +5,6 @@ namespace Faker.Core.Generators.Core.Generators.Int;
 public class UIntGenerator : IntegerGenerator<uint>
 {
     public UIntGenerator() : base(
-        random => (uint)random.Next(0, 1001),
-        uint.MinValue, 
-        uint.MaxValue
+        random => (uint)random.Next(0, 1001)
     ) { }
 }
