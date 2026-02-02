@@ -1,3 +1,4 @@
+using System;
 using System.Reflection;
 using Faker.Core.Extensions.Type;
 using Faker.Core.Generators.Core.Factory;

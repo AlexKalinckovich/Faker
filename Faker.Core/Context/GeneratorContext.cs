@@ -1,3 +1,5 @@
+using System;
+
 namespace Faker.Core.Context;
 
 public readonly struct GeneratorContext(in Random random, in Faker faker)

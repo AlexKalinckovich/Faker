@@ -1,17 +1,12 @@
-using System.Linq.Expressions;
-using System.Reflection;
+using System;
+using System.Collections.Generic;
 using Faker.Core.Generators.Core.Abstraction;
 
 namespace Faker.Core.Config;
 
 public readonly struct FakerConfig
 {
-    public readonly Dictionary<Type, IValueGenerator> CustomGenerators { get; } = new() ;
-
-    public FakerConfig()
-    {
-        
-    }
+    public Dictionary<Type, IValueGenerator> CustomGenerators { get; } = new() ;
 
     public FakerConfig(params KeyValuePair<Type, IValueGenerator>[] customGeneratorKeyValuePairs)
     {

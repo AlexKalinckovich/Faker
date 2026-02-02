@@ -1,8 +1,8 @@
-﻿using System.Text;
+﻿using System;
+using System.Collections.Generic;
 using Faker.Core.Config;
 using Faker.Core.Context;
 using Faker.Core.Generators.Core.Abstraction;
-using Faker.Core.Generators.Core.Validator;
 
 namespace Faker.Example;
 
@@ -72,7 +72,7 @@ class Sample
     
     private class CustomAGenerator : IValueGenerator
     {
-        public object? Generate(in Type typeToGenerate, in GeneratorContext context)
+        public object Generate(in Type typeToGenerate, in GeneratorContext context)
         {
             return new A()
             {

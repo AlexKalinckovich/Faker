@@ -1,3 +1,5 @@
+using System;
+
 namespace Faker.Core.Extensions.Type;
 
 public static class TypeExtensions
@@ -29,6 +31,7 @@ public static class TypeExtensions
                             type == typeof(decimal);
         
         System.Type? underlyingType = Nullable.GetUnderlyingType(type);
+        
         if (underlyingType != null && !isSimpleType)
         {
             isSimpleType = IsSimpleType(underlyingType);

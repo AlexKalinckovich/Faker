@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using Faker.Core.Context;
 using Faker.Core.Extensions.Type;

@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Faker.Core.Config;
 using Faker.Core.Context;
 using Faker.Core.Extensions.Type;

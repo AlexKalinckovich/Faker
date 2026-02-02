@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using Faker.Core.Config;
 using Faker.Core.Context;
 using Faker.Core.Extensions.Type;
