@@ -41,6 +41,7 @@ public class NullableGeneratorDecorator : IValueGenerator
     private bool IsNullableVersionOfSupportedType(in Type type)
     {
         Type? underlyingType = Nullable.GetUnderlyingType(type);
+        
         return underlyingType != null && _innerGenerator.CanGenerate(underlyingType);
     }
     

@@ -1,13 +1,12 @@
-using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Reflection;
 using Faker.Core.Context;
 using Faker.Core.Extensions.Type;
-using Faker.Core.Generators.Core.Abstraction.TypeCreators.utils;
+using Faker.Core.Generators.Core.Abstraction;
 using Faker.Core.Generators.Core.Factory;
-using Faker.Core.Generators.Core.Validator;
+using Faker.Core.Generators.Core.Generators.TypeCreators.utils;
 
-namespace Faker.Core.Generators.Core.Abstraction.TypeCreators;
+namespace Faker.Core.Generators.Core.Generators.TypeCreators;
 
 
 public class ClassTypeCreator : ITypeCreator
@@ -16,6 +15,7 @@ public class ClassTypeCreator : ITypeCreator
     private readonly GeneratorFactory _factory;
     private readonly GeneratorContext _context;
     private readonly ConstructorUtils _constructorUtils;
+    
     
     private readonly Dictionary<Type, object> _createdInstances = new();
 
@@ -32,7 +32,7 @@ public class ClassTypeCreator : ITypeCreator
         return CreateClassType(_type);
     }
 
-    private object? CreateClassType(in Type type)
+    public object? CreateClassType(in Type type)
     {
         if (_factory.HasGeneratorForType(type))
         {
@@ -119,7 +119,11 @@ public class ClassTypeCreator : ITypeCreator
 
     private static PropertyInfo[] GetPublicInstanceProperties(in Type type)
     {
-        return type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+        PropertyInfo[] allProperties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+    
+        return allProperties
+            .Where((PropertyInfo p) => p is { CanWrite: true, SetMethod.IsPublic: true })
+            .ToArray();
     }
 
     private static object? GetDefaultValueForType(in Type type)

@@ -7,6 +7,7 @@ using Faker.Core.Generators.Core.Abstraction;
 using Faker.Core.Generators.Core.Generators.Boolean;
 using Faker.Core.Generators.Core.Generators.Byte;
 using Faker.Core.Generators.Core.Generators.Char;
+using Faker.Core.Generators.Core.Generators.DateTime;
 using Faker.Core.Generators.Core.Generators.Decimal;
 using Faker.Core.Generators.Core.Generators.Double;
 using Faker.Core.Generators.Core.Generators.Enum;
@@ -41,7 +42,7 @@ public class GeneratorFactory
 
     public bool HasGeneratorForType(in Type type)
     {
-        return _primitiveGenerators.ContainsKey(type);
+        return type.IsEnum || _primitiveGenerators.ContainsKey(type);
     }
     
     private void RegisterPrimitiveGenerators()
@@ -71,6 +72,7 @@ public class GeneratorFactory
         
         RegisterGenerator(typeof(Enum), new EnumGenerator());
         
+        RegisterGenerator(typeof(DateTime), new DateTimeGenerator());
     }
 
     private void RegisterGenerator(in Type type, in IValueGenerator generator)
@@ -84,6 +86,11 @@ public class GeneratorFactory
         {
             Type underlyingType = Nullable.GetUnderlyingType(type) ?? type;
 
+            if (underlyingType.IsEnum)
+            {
+                return _primitiveGenerators[typeof(Enum)];
+            }
+            
             if (_primitiveGenerators.TryGetValue(underlyingType, out IValueGenerator? baseGenerator))
             {
                 if (type.IsNullableType())
@@ -98,6 +105,11 @@ public class GeneratorFactory
         {
             if (_primitiveGenerators.TryGetValue(type, out IValueGenerator? baseGenerator))
             {
+                if (type.IsNullableType())
+                {
+                    return new NullableGeneratorDecorator(baseGenerator, DefaultNullProbability);
+                }
+
                 return baseGenerator;
             }
         }

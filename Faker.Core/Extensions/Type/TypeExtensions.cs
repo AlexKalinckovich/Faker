@@ -28,7 +28,8 @@ public static class TypeExtensions
         bool isSimpleType = type.IsPrimitive ||
                             type.IsEnum ||
                             type == typeof(string) ||
-                            type == typeof(decimal);
+                            type == typeof(decimal) ||
+                            type == typeof(DateTime);
         
         System.Type? underlyingType = Nullable.GetUnderlyingType(type);
         

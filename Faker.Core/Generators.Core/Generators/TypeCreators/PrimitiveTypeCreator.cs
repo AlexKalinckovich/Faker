@@ -1,9 +1,9 @@
-using System;
 using Faker.Core.Context;
 using Faker.Core.Extensions.Type;
+using Faker.Core.Generators.Core.Abstraction;
 using Faker.Core.Generators.Core.Factory;
 
-namespace Faker.Core.Generators.Core.Abstraction.TypeCreators;
+namespace Faker.Core.Generators.Core.Generators.TypeCreators;
 
 public class PrimitiveTypeCreator : ITypeCreator
 {

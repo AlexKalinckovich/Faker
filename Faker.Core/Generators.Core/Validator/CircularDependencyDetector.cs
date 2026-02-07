@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Faker.Core.Extensions.Type;
-using Faker.Core.Generators.Core.Abstraction.TypeCreators.utils;
+using Faker.Core.Generators.Core.Generators.TypeCreators.utils;
 
 namespace Faker.Core.Generators.Core.Validator;
 
@@ -12,6 +12,7 @@ public static class CircularDependencyDetector
     public static bool HasCircularDependency(ConstructorInfo rootConstructor)
     {
         HashSet<Type> processingTypes = new HashSet<Type>();
+        
         Type? constructorType = rootConstructor.DeclaringType;
         
         if (constructorType != null)
@@ -73,6 +74,7 @@ public static class CircularDependencyDetector
         ConstructorInfo? nextConstructor = ConstructorInfoUtils
             .GetConstructorsOfTypeSortedByParameterCount(type)
             .FirstOrDefault();
+        
         bool isCycle = CheckNextConstructorForCycleIfNotNull(processingTypes, nextConstructor);
         if (!isCycle)
         {

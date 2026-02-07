@@ -1,8 +1,6 @@
-using System;
-using System.Linq;
 using System.Reflection;
 
-namespace Faker.Core.Generators.Core.Abstraction.TypeCreators.utils;
+namespace Faker.Core.Generators.Core.Generators.TypeCreators.utils;
 
 public static class ConstructorInfoUtils
 {

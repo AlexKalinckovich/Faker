@@ -1,10 +1,8 @@
-using System;
 using System.Reflection;
-using Faker.Core.Extensions.Type;
-using Faker.Core.Generators.Core.Factory;
+using Faker.Core.Exceptions;
 using Faker.Core.Generators.Core.Validator;
 
-namespace Faker.Core.Generators.Core.Abstraction.TypeCreators.utils;
+namespace Faker.Core.Generators.Core.Generators.TypeCreators.utils;
 
 public class ConstructorUtils
 {
@@ -41,22 +39,23 @@ public class ConstructorUtils
     {
         try
         {
-            
             return Activator.CreateInstance(type)!;
         }
         catch (MissingMethodException)
         {
-            throw new InvalidOperationException(
-                $"Circular dependency detected for type '{type.Name}', and no public parameterless constructor was found. " +
-                "To resolve circular dependencies, ensure the class has a public no-arguments constructor.");
+            string msg = $"Circular dependency detected for type '{type.Name}', and no public parameterless constructor was found. " +
+                         "To resolve circular dependencies, ensure the class has a public no-arguments constructor.";
+            throw new FakerCreationException(msg, new InvalidOperationException());
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            throw new InvalidOperationException(
-                $"Failed to create instance of '{type.Name}' using default constructor.", ex);
+            string msg = $"Failed to create instance of '{type.Name}' using default constructor.";
+            throw new FakerCreationException(msg, new InvalidOperationException());
+
         }
     }
     
+
     private object? TryCreateInstanceUsingProvidedConstructor(in ConstructorInfo constructor)
     {
         try
@@ -72,7 +71,9 @@ public class ConstructorUtils
     private object CreateInstanceViaConstructor(in ConstructorInfo constructor)
     {
         ParameterInfo[] parameterInfos = constructor.GetParameters();
+        
         object?[] parameterValues = CreateRandomConstructorParameters(parameterInfos);
+        
         return constructor.Invoke(parameterValues);
     }
 
