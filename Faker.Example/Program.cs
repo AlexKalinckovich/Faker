@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
 using Faker.Core.Config;
 using Faker.Core.Context;
 using Faker.Core.Generators.Core.Abstraction;
@@ -11,21 +10,22 @@ class Sample
 
     public class A
     {
+        public string Name { get; set; }
+        public string Surname { get; set; }
+        public ConcurrentDictionary<string, int> Numbers { get;set; }
+       
+        public double[] Doubles { get; set; }
+        
         public A()
         {
+            
         }
+        
 
-        public string StringProperty { get; set; }
-        
-        public A A1 { get; set; }
-        
-        public A(A a)
-        {
-            A1 = a;
-        }
         public override string ToString()
         {
-            return $"To string A with value {StringProperty}";
+            string numbersVal = Numbers.Aggregate("", (current, number) => current + number);
+            return $"Name: {Name}, Surname: {Surname}, Numbers: {numbersVal}";
         }
     }
 
@@ -66,35 +66,33 @@ class Sample
         public string Str => "C string";
         public override string ToString()
         {
-            return $"ToString C {A.StringProperty}";
+            return $"ToString C {A}";
         }
     }
-    
-    private class CustomAGenerator : IValueGenerator
+
+
+    class NameGenerator : IValueGenerator
     {
         public object Generate(in Type typeToGenerate, in GeneratorContext context)
         {
-            return new A()
-            {
-                StringProperty = "Hello World!",
-            };
+            return "Name";
         }
 
         public bool CanGenerate(in Type type)
         {
-            return type == typeof(A);
+            return type == typeof(string);
         }
     }
-
+    
     public static void Main()
     {
-        FakerConfig config = new FakerConfig(new KeyValuePair<Type, IValueGenerator>(typeof(A), new CustomAGenerator()));
+        FakerConfig config = new FakerConfig();
+        config.Add<A, string>(p => p.Name, new NameGenerator());
         
         var faker = new Core.Faker(config);
-        for (int i = 0; i < 10; i++)
-        {
-            Console.WriteLine(faker.Create<B>());
-        }
+        A a = faker.Create<A>();
+        
+        Console.WriteLine(a.ToString());
     }
     
 }

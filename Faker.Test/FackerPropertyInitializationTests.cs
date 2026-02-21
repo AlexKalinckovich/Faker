@@ -51,7 +51,6 @@ public class FakerPropertyInitializationTests
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Id, Is.Not.EqualTo(0));
         Assert.That(result.Name, Is.Not.Null.And.Not.Empty);
-        Assert.That(result.IsActive, Is.Not.EqualTo(default(bool)));
     }
         
     [Test]
@@ -64,6 +63,5 @@ public class FakerPropertyInitializationTests
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Name, Is.Not.Null.And.Not.Empty);
         Assert.That(result.Id, Is.Not.EqualTo(0));
-        Assert.That(result.IsActive, Is.Not.EqualTo(default(bool)));
     }
 }

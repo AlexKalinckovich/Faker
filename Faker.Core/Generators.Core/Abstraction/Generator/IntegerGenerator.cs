@@ -1,9 +1,10 @@
 using System;
+using System.Numerics;
 using Faker.Core.Context;
 
 namespace Faker.Core.Generators.Core.Abstraction.Generator;
 
-public abstract class IntegerGenerator<T> : IValueGenerator where T : struct
+public abstract class IntegerGenerator<T> : IValueGenerator where T : INumber<T>
 {
     private readonly Func<Random, T> _generatorFunc;
 

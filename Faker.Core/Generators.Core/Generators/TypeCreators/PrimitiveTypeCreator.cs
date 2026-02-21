@@ -1,3 +1,4 @@
+using System.Reflection;
 using Faker.Core.Context;
 using Faker.Core.Extensions.Type;
 using Faker.Core.Generators.Core.Abstraction;
@@ -10,52 +11,30 @@ public class PrimitiveTypeCreator : ITypeCreator
     private readonly Type _type;
     private readonly GeneratorFactory _factory;
     private readonly GeneratorContext _context;
+    private readonly MemberInfo? _member;
 
-    public PrimitiveTypeCreator(in Type type, in GeneratorFactory factory, in GeneratorContext context)
+    public PrimitiveTypeCreator(Type type, GeneratorFactory factory, GeneratorContext context, MemberInfo? member = null)
     {
         _type = type;
         _factory = factory;
         _context = context;
+        _member = member;
     }
 
-    
     public object? Create()
     {
-        IValueGenerator generator = _factory.GetGeneratorForType(_type);
-        
-        object? result = GenerateTypeUsingContext(generator, _context);
-        
-        return HandleNullability(result);
-    }
+        IValueGenerator generator = _member != null
+            ? _factory.GetGeneratorForMember(_member, _type)
+            : _factory.GetGeneratorForType(_type);
 
-    private object? GenerateTypeUsingContext(in IValueGenerator generator, in GeneratorContext context)
-    {
-        AssertGeneratorCanGenerateType(_type,generator);
+        if (!generator.CanGenerate(_type))
+            throw new ArgumentException($"Generator cannot produce type {_type}");
 
-        object? result = generator.Generate(_type, context);
-        
-        return result;
-    }
+        object? value = generator.Generate(_type, _context);
 
-    private static void AssertGeneratorCanGenerateType(Type parameterType, IValueGenerator generator)
-    {
-        if (!generator.CanGenerate(parameterType))
-        {
-            throw new ArgumentException($"Cannot generate type {parameterType.Name}");
-        }
-    }
-
-    private object? HandleNullability(in object? value)
-    {
-    
         if (value == null && !_type.IsNullableType())
-        {
-            throw new InvalidOperationException(
-                $"Generator returned null for non-nullable type {_type.Name}. " +
-                $"This likely means a NullableGeneratorDecorator was used for a non-nullable type.");
-        }
-    
+            throw new InvalidOperationException($"Generator returned null for non-nullable type {_type}");
+
         return value;
     }
-    
 }

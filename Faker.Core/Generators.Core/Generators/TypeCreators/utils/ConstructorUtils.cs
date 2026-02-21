@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Reflection;
 using Faker.Core.Exceptions;
 using Faker.Core.Generators.Core.Validator;
@@ -74,23 +75,30 @@ public class ConstructorUtils
         
         object?[] parameterValues = CreateRandomConstructorParameters(parameterInfos);
         
-        return constructor.Invoke(parameterValues);
+        object instance =  constructor.Invoke(parameterValues);
+        
+        return instance;
     }
 
-    private object?[] CreateRandomConstructorParameters(in ParameterInfo[] constructorParameterInfos)
+    private object?[] CreateRandomConstructorParameters(ParameterInfo[] constructorParameterInfos)
     {
-        object?[] constructorParameters = new object?[constructorParameterInfos.Length];
+        object?[] parameters = new object?[constructorParameterInfos.Length];
+        Type? declaringType = constructorParameterInfos[0].Member.DeclaringType;
 
         for (int i = 0; i < constructorParameterInfos.Length; i++)
         {
-            Type parameterType = constructorParameterInfos[i].ParameterType;
-
-            object? constructorRandomParameter = _classTypeCreator.GenerateDependencyType(parameterType);
-
-            constructorParameters[i] = constructorRandomParameter;
+            ParameterInfo param = constructorParameterInfos[i];
+            PropertyInfo? matchingProp = declaringType?.GetProperty(param.Name ?? string.Empty, BindingFlags.Public | BindingFlags.Instance);
+            if (matchingProp != null && matchingProp.PropertyType == param.ParameterType)
+            {
+                parameters[i] = _classTypeCreator.GenerateDependencyType(param.ParameterType, matchingProp);
+            }
+            else
+            {
+                parameters[i] = _classTypeCreator.GenerateDependencyType(param.ParameterType, null);
+            }
         }
-
-        return constructorParameters;
+        return parameters;
     }
     
 }

@@ -24,8 +24,6 @@ public class FakerNullableTypeTests
         // Arrange & Act
         int? result = _faker.Create<int?>();
             
-        // Assert - sometimes null, sometimes not (10% chance null)
-        // We run multiple times to verify both cases occur
         bool foundNull = false;
         bool foundValue = false;
             

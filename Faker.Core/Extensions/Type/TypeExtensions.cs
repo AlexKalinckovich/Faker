@@ -6,8 +6,7 @@ public static class TypeExtensions
 {
     public static bool IsNullableType(this System.Type type)
     {
-        return !type.IsValueType || 
-               Nullable.GetUnderlyingType(type) != null;
+        return Nullable.GetUnderlyingType(type) != null;
     }
 
     public static bool IsStandardLibraryType(this System.Type type)

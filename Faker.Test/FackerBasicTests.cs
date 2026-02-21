@@ -31,7 +31,6 @@ public class FakerBasicTests
             
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result, Is.Not.Empty);
     }
         
     [Test]

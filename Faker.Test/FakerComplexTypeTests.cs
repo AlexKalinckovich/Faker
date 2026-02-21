@@ -88,6 +88,6 @@ public class FakerComplexTypeTests
         Assert.That(result.Customer.Name, Is.Not.Null);
         Assert.That(result.Customer.Email, Is.Not.Null);
         Assert.That(result.Items, Is.Not.Null);
-        Assert.That(result.Items.Count, Is.EqualTo(0));
+        Assert.That(result.Items.Count, Is.Not.EqualTo(0));
     }
 }

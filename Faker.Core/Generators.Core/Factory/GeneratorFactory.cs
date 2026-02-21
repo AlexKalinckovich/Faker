@@ -1,8 +1,7 @@
-using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Reflection;
 using Faker.Core.Config;
 using Faker.Core.Context;
-using Faker.Core.Extensions.Type;
 using Faker.Core.Generators.Core.Abstraction;
 using Faker.Core.Generators.Core.Generators.Boolean;
 using Faker.Core.Generators.Core.Generators.Byte;
@@ -24,16 +23,20 @@ public class GeneratorFactory
 {
     private const double DefaultNullProbability = 0.1;
     private readonly Dictionary<Type, IValueGenerator> _primitiveGenerators = new();
-
+    private readonly FakerConfig _config;
     public GeneratorFactory()
     {
         RegisterPrimitiveGenerators();
+        _config = new FakerConfig();
     }
 
     public GeneratorFactory(in FakerConfig config)
     {
+        _config = config;
+        KeyValuePair<Type, IValueGenerator>[] configGenerators = config.CustomGenerators.ToArray();
+
         RegisterPrimitiveGenerators();
-        Dictionary<Type, IValueGenerator> configGenerators = config.CustomGenerators;
+        
         foreach (KeyValuePair<Type,IValueGenerator> configGenerator in configGenerators)
         {
             RegisterGenerator(configGenerator.Key, configGenerator.Value);
@@ -75,6 +78,19 @@ public class GeneratorFactory
         RegisterGenerator(typeof(DateTime), new DateTimeGenerator());
     }
 
+    public IValueGenerator GetGeneratorForMember(MemberInfo member, Type memberType)
+    {
+        IValueGenerator? memberGen = _config.GetGeneratorForMember(member);
+        if (memberGen != null)
+        {
+            Type underlyingType = Nullable.GetUnderlyingType(memberType) ?? memberType;
+                
+            return WrapWithNullableDecoratorIfNeeded(underlyingType, memberType, memberGen);
+        }
+        
+        return GetGeneratorForType(memberType);
+    }
+    
     private void RegisterGenerator(in Type type, in IValueGenerator generator)
     {
         _primitiveGenerators[type] = generator;
@@ -82,41 +98,35 @@ public class GeneratorFactory
 
     public IValueGenerator GetGeneratorForType(in Type type)
     {
-        if (type.IsSimpleType())
+        Type underlyingType = Nullable.GetUnderlyingType(type) ?? type;
+        
+        if (underlyingType.IsEnum)
         {
-            Type underlyingType = Nullable.GetUnderlyingType(type) ?? type;
-
-            if (underlyingType.IsEnum)
-            {
-                return _primitiveGenerators[typeof(Enum)];
-            }
-            
-            if (_primitiveGenerators.TryGetValue(underlyingType, out IValueGenerator? baseGenerator))
-            {
-                if (type.IsNullableType())
-                {
-                    return new NullableGeneratorDecorator(baseGenerator, DefaultNullProbability);
-                }
-
-                return baseGenerator;
-            }
+            return _primitiveGenerators[typeof(Enum)];
         }
-        else
-        {
-            if (_primitiveGenerators.TryGetValue(type, out IValueGenerator? baseGenerator))
-            {
-                if (type.IsNullableType())
-                {
-                    return new NullableGeneratorDecorator(baseGenerator, DefaultNullProbability);
-                }
-
-                return baseGenerator;
-            }
-        }
-
-        return new ComplexTypeFallbackGenerator();
+        
+        return GetGeneratorForUnderlyingType(underlyingType, type);
     }
     
+    private IValueGenerator GetGeneratorForUnderlyingType(Type underlyingType, Type type)
+    {
+        return _primitiveGenerators.TryGetValue(underlyingType, out IValueGenerator? baseGenerator) ? 
+            WrapWithNullableDecoratorIfNeeded(underlyingType, type, baseGenerator) : new ComplexTypeFallbackGenerator();
+    }
+
+    private static IValueGenerator WrapWithNullableDecoratorIfNeeded(Type underlyingType, Type type,
+        IValueGenerator baseGenerator)
+    {
+        IValueGenerator generator = baseGenerator;
+        if (type != underlyingType)
+        {
+            generator = new NullableGeneratorDecorator(baseGenerator, DefaultNullProbability);
+        }
+        
+        
+        return generator;
+    }
+
     private class ComplexTypeFallbackGenerator : IValueGenerator
     {
         public bool CanGenerate(in Type type) => false;
